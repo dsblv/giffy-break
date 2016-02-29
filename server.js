@@ -29,7 +29,7 @@ function takeFreePort(server, initialPort) {
 function establishServer() {
 	const app = new Koa();
 
-	const socketIOClientDir = resolvePkg('socket.io-client');
+	const socketIOClientDir = resolvePkg('socket.io-client', {cwd: __dirname});
 
 	app.use(serve(socketIOClientDir));
 	app.use(serve(`${__dirname}/public`));

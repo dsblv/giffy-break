@@ -45,7 +45,7 @@ establishServer().then(server => {
 	const io = new SocketIO(server);
 
 	process.on('message', data => {
-		io.emit(...data);
+		io.emit.apply(io, data);
 	});
 
 	io.on('connection', socket => {

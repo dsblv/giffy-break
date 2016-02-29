@@ -1,6 +1,7 @@
 'use strict';
 const http = require('http');
 const Koa = require('koa');
+const resolvePkg = require('resolve-pkg');
 const serve = require('koa-static');
 const SocketIO = require('socket.io');
 const pify = require('pify');
@@ -28,8 +29,10 @@ function takeFreePort(server, initialPort) {
 function establishServer() {
 	const app = new Koa();
 
+	const socketIOClientDir = resolvePkg('socket.io-client');
+
+	app.use(serve(socketIOClientDir));
 	app.use(serve(`${__dirname}/public`));
-	app.use(serve(`${__dirname}/node_modules`));
 
 	const server = http.createServer(app.callback());
 

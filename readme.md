@@ -2,7 +2,7 @@
 
 > Watch random gifs in a browser while your `promise` is resolving
 
-*Inspired by [gifi](https://github.com/vdemedes/gifi)*
+*Inspired by [vdemedes/gifi](https://github.com/vdemedes/gifi)*.
 
 
 ## Install

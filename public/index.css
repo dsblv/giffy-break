@@ -1,0 +1,55 @@
+html,
+body {
+	height: 100%;
+	margin: 0;
+}
+
+body {
+	background: #eee;
+	color: #333;
+	font-size: 18px;
+	font-family: Helvetica, sans-serif;
+	line-height: 2em;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+body *,
+body *:before,
+body *:after {
+	box-sizing: inherit;
+}
+
+#root {
+	display: block;
+	max-width: 80%;
+}
+
+#root img {
+	display: block;
+	max-width: 100%;
+}
+
+.error {
+	color: red;
+}
+
+code {
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: 4px;
+	padding: .25em;
+}
+
+.powered-by {
+	display: block;
+	position: absolute;
+	width: 200px;
+	height: 22px;
+	bottom: 5%;
+	left: 50%;
+	margin-left: -100px;
+	background: url('giphy-logo.png');
+}

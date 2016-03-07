@@ -1,20 +1,21 @@
 'use strict';
-const http = require('http');
-const Koa = require('koa');
-const resolvePkg = require('resolve-pkg');
-const serve = require('koa-static');
-const SocketIO = require('socket.io');
-const pify = require('pify');
+var http = require('http');
+var express = require('express');
+var serve = express.static;
+var resolve = require('path').resolve;
+var resolvePkg = require('resolve-pkg');
+var SocketIO = require('socket.io');
+var pify = require('pify');
 
 function takeFreePort(server, initialPort) {
-	const fn = pify(server.listen.bind(server));
-	const once = pify(server.once.bind(server));
+	var fn = pify(server.listen.bind(server));
+	var once = pify(server.once.bind(server));
 
-	const attempt = port => {
+	var attempt = function (port) {
 		return Promise.race([
 			fn(port),
 			once('error')
-		]).catch(err => {
+		]).catch(function (err) {
 			if (err.code === 'EADDRINUSE') {
 				return attempt(++port);
 			}
@@ -23,32 +24,32 @@ function takeFreePort(server, initialPort) {
 		});
 	};
 
-	return attempt(initialPort).then(() => server);
+	return attempt(initialPort).then(function () {
+		return server;
+	});
 }
 
 function establishServer() {
-	const app = new Koa();
+	var app = express();
 
-	const socketIOClientDir = resolvePkg('socket.io-client', {cwd: __dirname});
+	app.use(serve(resolvePkg('socket.io-client', {cwd: __dirname})));
+	app.use(serve(resolve(__dirname, 'public')));
 
-	app.use(serve(socketIOClientDir));
-	app.use(serve(`${__dirname}/public`));
-
-	const server = http.createServer(app.callback());
+	var server = http.createServer(app);
 
 	return takeFreePort(server, 6175);
 }
 
-establishServer().then(server => {
+establishServer().then(function (server) {
 	process.send(['@@INIT', server.address()]);
 
-	const io = new SocketIO(server);
+	var io = new SocketIO(server);
 
-	process.on('message', data => {
+	process.on('message', function (data) {
 		io.emit.apply(io, data);
 	});
 
-	io.on('connection', socket => {
+	io.on('connection', function (socket) {
 		socket.emit('start-message', process.env.START_MESSAGE);
 	});
 });

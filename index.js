@@ -1,18 +1,19 @@
 'use strict';
-const fork = require('child_process').fork;
-const got = require('got');
-const pify = require('pify');
-const uniqueRandomArray = require('unique-random-array');
+var fork = require('child_process').fork;
+var resolve = require('path').resolve;
+var got = require('got');
+var uniqueRandomArray = require('unique-random-array');
+var delay = require('delay');
 
 function establishServer(startMessage) {
-	const serverProcess = fork(`${__dirname}/server.js`, {
+	var serverProcess = fork(resolve(__dirname, 'server.js'), {
 		env: {
 			START_MESSAGE: startMessage
 		}
 	});
 
-	return new Promise(resolve => {
-		serverProcess.once('message', msg => {
+	return new Promise(function (resolve) {
+		serverProcess.once('message', function (msg) {
 			if (msg[0] === '@@INIT') {
 				resolve({
 					process: serverProcess,
@@ -30,14 +31,16 @@ function fetchGifs(apiKey) {
 			limit: 50,
 			api_key: apiKey // eslint-disable-line camelcase
 		}
-	}).then(res => res.body.data);
+	}).then(function (res) {
+		return res.body.data;
+	});
 }
 
 function rotateGifs(gifs, interval, next) {
-	const randomGif = uniqueRandomArray(gifs);
-	let flow = true;
+	var randomGif = uniqueRandomArray(gifs);
+	var flow = true;
 
-	const loop = () => {
+	var loop = function () {
 		if (!flow) {
 			return;
 		}
@@ -48,26 +51,28 @@ function rotateGifs(gifs, interval, next) {
 
 	loop();
 
-	return () => {
+	return function () {
 		flow = false;
 	};
 }
 
 function generateMessageRenderers(opts) {
-	const defaults = {
+	var defaults = {
 		start: 'Hi',
 		resolve: 'Here you go',
 		reject: 'Le wild error appers'
 	};
 
-	const ret = {};
-
-	for (const key of Object.keys(defaults)) {
-		const opt = opts[`${key}Message`] || defaults[key];
-
-		ret[key] = (msg) => {
+	var createRenderer = function (opt) {
+		return function (msg) {
 			return typeof opt === 'function' ? opt(msg) : opt;
 		};
+	};
+
+	var ret = {};
+
+	for (var key of Object.keys(defaults)) {
+		ret[key] = createRenderer(opts[key + 'Message'] || defaults[key]);
 	}
 
 	return ret;
@@ -76,35 +81,33 @@ function generateMessageRenderers(opts) {
 function giffyBreak(input, apiKey, opts) {
 	opts = opts || {};
 
-	const message = generateMessageRenderers(opts);
+	var message = generateMessageRenderers(opts);
 
 	return Promise.all([
 		establishServer(message.start()),
 		fetchGifs(apiKey)
-	]).then(res => {
-		const serverProcess = res[0].process;
-		const address = res[0].address;
-		const gifs = res[1];
+	]).then(function (res) {
+		var serverProcess = res[0].process;
+		var address = res[0].address;
+		var gifs = res[1];
 
-		const send = pify(serverProcess.send.bind(serverProcess));
+		var stopGifs = rotateGifs(gifs, opts.interval || 5000, function (gif) {
+			console.log('gif yo');
+			serverProcess.send(['gif', gif]);
+		});
 
-		const stopGifs = rotateGifs(
-			gifs,
-			opts.interval || 5000,
-			gif => send(['gif', gif])
-		);
-
-		const stop = () => {
+		var stop = function () {
 			stopGifs();
 			serverProcess.kill();
 		};
 
-		input.then(
-			res => send(['resolve-message', message.resolve(res)]),
-			err => send(['reject-message', message.reject(err)])
-		).then(stop);
+		input.then(function (res) {
+			serverProcess.send(['resolve-message', message.resolve(res)]);
+		}, function (err) {
+			serverProcess.send(['reject-message', message.reject(err)]);
+		}).then(delay(100)).then(stop);
 
-		return `http://localhost:${address.port}`;
+		return 'http://localhost:' + address.port;
 	});
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "giffy-break",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Watch random gifs in a browser while your promise is resolving",
   "license": "MIT",
   "repository": "dsblv/giffy-break",

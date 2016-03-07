@@ -92,20 +92,20 @@ function giffyBreak(input, apiKey, opts) {
 		var gifs = res[1];
 
 		var stopGifs = rotateGifs(gifs, opts.interval || 5000, function (gif) {
-			console.log('gif yo');
 			serverProcess.send(['gif', gif]);
 		});
 
-		var stop = function () {
-			stopGifs();
-			serverProcess.kill();
-		};
-
-		input.then(function (res) {
-			serverProcess.send(['resolve-message', message.resolve(res)]);
-		}, function (err) {
-			serverProcess.send(['reject-message', message.reject(err)]);
-		}).then(delay(100)).then(stop);
+		input
+			.then(function (res) {
+				serverProcess.send(['resolve-message', message.resolve(res)]);
+			}, function (err) {
+				serverProcess.send(['reject-message', message.reject(err)]);
+			})
+			.then(stopGifs)
+			.then(delay(100))
+			.then(function () {
+				serverProcess.kill();
+			});
 
 		return 'http://localhost:' + address.port;
 	});

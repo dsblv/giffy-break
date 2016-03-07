@@ -28,7 +28,7 @@ body *:after {
 	max-width: 80%;
 }
 
-#root img {
+#root video {
 	display: block;
 	max-width: 100%;
 }

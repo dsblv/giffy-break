@@ -30,9 +30,7 @@ function fetchGifs(apiKey) {
 			limit: 50,
 			api_key: apiKey // eslint-disable-line camelcase
 		}
-	}).then(res => {
-		return res.body.data.map(gif => gif.images.original.url);
-	});
+	}).then(res => res.body.data);
 }
 
 function rotateGifs(gifs, interval, next) {

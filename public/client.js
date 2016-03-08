@@ -1,5 +1,7 @@
 (function (root, io, baseUrl, $) {
 	'use strict';
+	let finished = false;
+
 	function preloadGif(gif) {
 		const video = $('video', null, {
 			src: gif.images.original.mp4,
@@ -32,17 +34,33 @@
 	};
 
 	const display = fn => data => {
+		if (finished) {
+			return;
+		}
+
 		Promise.resolve(fn(data)).then(node => {
 			root.innerHTML = '';
 			root.appendChild(node);
 		});
 	};
 
+	const show = {};
+
+	for (const key of Object.keys(render)) {
+		show[key] = display(render[key]);
+	}
+
 	io(baseUrl)
-		.on('start-message', display(render.message))
-		.on('resolve-message', display(render.message))
-		.on('reject-message', display(render.rejectMessage))
-		.on('gif', display(render.gif));
+		.on('start-message', show.message)
+		.on('gif', show.gif)
+		.on('resolve-message', (msg) => {
+			show.message(msg);
+			finished = true;
+		})
+		.on('reject-message', (msg) => {
+			show.rejectMessage(msg);
+			finished = true;
+		});
 })(
 	window.document.getElementById('root'),
 	window.io,

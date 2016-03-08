@@ -38,21 +38,13 @@ function fetchGifs(apiKey) {
 
 function rotateGifs(gifs, interval, next) {
 	var randomGif = uniqueRandomArray(gifs);
-	var flow = true;
 
-	var loop = function () {
-		if (!flow) {
-			return;
-		}
-
+	var loop = setInterval(function () {
 		next(randomGif());
-		setTimeout(loop, interval);
-	};
-
-	loop();
+	}, interval);
 
 	return function () {
-		flow = false;
+		clearInterval(loop);
 	};
 }
 
@@ -97,11 +89,12 @@ function giffyBreak(input, apiKey, opts) {
 
 		input
 			.then(function (res) {
+				stopGifs();
 				serverProcess.send(['resolve-message', message.resolve(res)]);
 			}, function (err) {
+				stopGifs();
 				serverProcess.send(['reject-message', message.reject(err)]);
 			})
-			.then(stopGifs)
 			.then(delay(100))
 			.then(function () {
 				serverProcess.kill();

@@ -2,8 +2,9 @@
 
 > Watch random gifs in a browser while your `promise` is resolving
 
-*Inspired by [vdemedes/gifi](https://github.com/vdemedes/gifi)*.
+![$ node example](media/demo.gif)
 
+*Inspired by [vdemedes/gifi](https://github.com/vdemedes/gifi)*.
 
 ## Install
 
@@ -77,7 +78,7 @@ Time between gifs in milliseconds.
 
 ## Related
 
-- [giffy-break-cli](https://github.com/dsblv/giffy-break-cli) — a CLI for this module.
+- [giffy-break-cli](https://github.com/dsblv/giffy-break-cli) — CLI for this module
 
 
 ## License
